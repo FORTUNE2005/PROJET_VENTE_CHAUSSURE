@@ -287,7 +287,7 @@ export default function DashboardClient({
       <div className="bg-white rounded-xl border border-stone-100">
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
           <h2 className="font-medium text-stone-900">Commandes récentes</h2>
-          <Link href="/admin/commandes" className="bg-stone-900 text-white text-xs font-medium px-4 py-2 rounded-full hover:bg-stone-800 transition-colors">
+          <Link href="/espace-prive/commandes" className="bg-stone-900 text-white text-xs font-medium px-4 py-2 rounded-full hover:bg-stone-800 transition-colors">
             Tout voir
           </Link>
         </div>

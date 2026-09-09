@@ -94,7 +94,7 @@ export default function AdminHomepagePage() {
           <h1 className="text-2xl font-serif font-bold text-stone-900">Images Accueil</h1>
           <p className="text-sm text-stone-500 mt-1">Gérez les images de la page d&apos;accueil</p>
         </div>
-        <Link href="/admin" className="text-sm text-stone-500 hover:text-stone-900">← Retour</Link>
+        <Link href="/espace-prive" className="text-sm text-stone-500 hover:text-stone-900">← Retour</Link>
       </div>
 
       {/* Hero Image */}

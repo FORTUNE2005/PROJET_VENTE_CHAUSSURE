@@ -2,13 +2,12 @@
 
 import { useState, useEffect, ReactNode } from "react";
 
-const ADMIN_PASSWORD = "REDACTED";
-
 export default function AdminGuard({ children }: { children: ReactNode }) {
   const [unlocked, setUnlocked] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     const ok = sessionStorage.getItem("lucia_admin_ok");
@@ -16,15 +15,28 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const handleUnlock = (e: React.FormEvent) => {
+  const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      sessionStorage.setItem("lucia_admin_ok", "1");
-      setUnlocked(true);
-    } else {
-      setError("Mot de passe incorrect");
-      setPassword("");
+    setChecking(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        sessionStorage.setItem("lucia_admin_ok", "1");
+        setUnlocked(true);
+      } else {
+        setError("Mot de passe incorrect");
+        setPassword("");
+      }
+    } catch {
+      setError("Erreur de connexion");
     }
+    setChecking(false);
   };
 
   if (loading) return null;
@@ -59,9 +71,10 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
           {error && <p className="text-red-400 text-xs">{error}</p>}
           <button
             type="submit"
-            className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 rounded-xl transition-colors"
+            disabled={checking}
+            className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 rounded-xl transition-colors disabled:opacity-50"
           >
-            Déverrouiller
+            {checking ? "Vérification..." : "Déverrouiller"}
           </button>
         </form>
       </div>

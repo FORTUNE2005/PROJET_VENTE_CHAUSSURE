@@ -1,18 +1,8 @@
-import Database from "better-sqlite3";
-import { join } from "path";
+import { neon } from "@neondatabase/serverless";
 
-const DB_PATH = join(process.cwd(), "db", "lucia.db");
+const sql = neon(process.env.DATABASE_URL!);
 
-let _db: Database.Database | null = null;
-
-export function getDb(): Database.Database {
-  if (!_db) {
-    _db = new Database(DB_PATH, { readonly: false });
-    _db.pragma("journal_mode = WAL");
-    _db.pragma("foreign_keys = ON");
-  }
-  return _db;
-}
+export { sql };
 
 export interface DbProduct {
   id: string;
@@ -26,16 +16,17 @@ export interface DbProduct {
   images: string;
   stock: number;
   rating: number;
-  reviewCount: number;
-  isNew: number;
-  isBestSeller: number;
+  reviewcount: number;
+  isnew: number;
+  isbestseller: number;
   description: string;
   material: string;
-  createdAt: string;
+  createdat: string;
 }
 
 export interface DbOrder {
   id: string;
+  clientid: string;
   customer: string;
   email: string;
   phone: string;
@@ -44,7 +35,7 @@ export interface DbOrder {
   status: string;
   date: string;
   items: string;
-  createdAt: string;
+  createdat: string;
 }
 
 export interface DbClient {
@@ -53,7 +44,8 @@ export interface DbClient {
   email: string;
   phone: string;
   address: string;
-  joinDate: string;
+  password: string;
+  joindate: string;
 }
 
 export function jsonToArray(val: string): string[] {
@@ -61,9 +53,5 @@ export function jsonToArray(val: string): string[] {
 }
 
 export function jsonToNumbers(val: string): number[] {
-  try { return JSON.parse(val); } catch { return []; }
-}
-
-export function jsonToItems(val: string): { name: string; qty: number; size: number }[] {
   try { return JSON.parse(val); } catch { return []; }
 }

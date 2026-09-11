@@ -8,8 +8,9 @@ export const metadata = {
   title: "Nouveautés | Lucia Chaussures",
 };
 
-export default function NouveautesPage() {
-  const newProducts = getAllProducts().filter((p) => p.isNew);
+export default async function NouveautesPage() {
+  const allProducts = await getAllProducts();
+  const newProducts = allProducts.filter((p) => p.isNew);
 
   return (
     <>

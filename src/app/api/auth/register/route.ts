@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import crypto from "crypto";
 import { registerSchema, validateBody } from "@/lib/validation";
 
@@ -12,9 +12,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, email, password, phone } = validation.data;
-  const db = getDb();
 
-  const existing = db.prepare("SELECT id FROM clients WHERE email = ?").get(email);
+  const [existing] = await sql`SELECT id FROM clients WHERE email = ${email}`;
   if (existing) {
     return NextResponse.json({ success: false, error: "Cet email est déjà utilisé" }, { status: 409 });
   }
@@ -23,7 +22,7 @@ export async function POST(request: NextRequest) {
   const hash = crypto.createHash("sha256").update(password).digest("hex");
   const joinDate = new Date().toISOString().split("T")[0];
 
-  db.prepare("INSERT INTO clients (id, name, email, phone, password, joinDate) VALUES (?, ?, ?, ?, ?, ?)").run(id, name, email, phone, hash, joinDate);
+  await sql`INSERT INTO clients (id, name, email, phone, password, joindate) VALUES (${id}, ${name}, ${email}, ${phone}, ${hash}, ${joinDate})`;
 
   return NextResponse.json({
     success: true,

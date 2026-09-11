@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { contactSchema, validateBody } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
@@ -11,8 +11,7 @@ export async function POST(request: NextRequest) {
   }
 
   const { name, email, subject, message } = validation.data;
-  const db = getDb();
   const id = String(Date.now());
-  db.prepare("INSERT INTO messages (id, name, email, subject, message) VALUES (?, ?, ?, ?, ?)").run(id, name, email, subject, message);
+  await sql`INSERT INTO messages (id, name, email, subject, message) VALUES (${id}, ${name}, ${email}, ${subject}, ${message})`;
   return NextResponse.json({ success: true }, { status: 201 });
 }

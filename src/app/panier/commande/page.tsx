@@ -45,7 +45,7 @@ export default function CheckoutPage() {
     }
   }, [user]);
 
-  const shipping = 1500;
+  const shipping = totalPrice >= 45000 ? 0 : 2500;
   const total = totalPrice + shipping;
 
   if (items.length === 0 && step !== "confirmation") {
@@ -141,51 +141,6 @@ export default function CheckoutPage() {
     }
     setLoading(false);
   };
-
-  if (items.length === 0 && step !== "confirmation") {
-    return (
-      <>
-        <Header />
-        <main className="flex-1 max-w-7xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-serif font-bold text-stone-900 mb-4">Votre panier est vide</h1>
-          <p className="text-sm text-stone-500 mb-6">Ajoutez des produits avant de passer commande.</p>
-          <Link href="/" className="inline-block bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-stone-800">
-            Découvrir nos produits
-          </Link>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
-  if (!authLoading && !user && step !== "confirmation") {
-    return (
-      <>
-        <Header />
-        <main className="flex-1 max-w-7xl mx-auto px-4 py-16 text-center">
-          <svg className="w-16 h-16 text-stone-300 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-          </svg>
-          <h1 className="text-2xl font-serif font-bold text-stone-900 mb-3">Connectez-vous pour passer commande</h1>
-          <p className="text-sm text-stone-500 mb-8 max-w-md mx-auto">
-            Vous devez créer un compte ou vous connecter avant de finaliser votre commande.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/auth/login" className="bg-stone-900 text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-stone-800">
-              Se connecter
-            </Link>
-            <Link href="/auth/register" className="border border-stone-200 text-stone-700 px-8 py-3 rounded-full text-sm font-medium hover:bg-stone-50">
-              Créer un compte
-            </Link>
-          </div>
-          <Link href="/panier" className="text-xs text-stone-400 hover:text-stone-600 mt-6 inline-block">
-            ← Retour au panier
-          </Link>
-        </main>
-        <Footer />
-      </>
-    );
-  }
 
   const steps: { key: Step; label: string; num: number }[] = [
     { key: "livraison", label: "Livraison", num: 1 },

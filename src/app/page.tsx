@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { getAllProducts } from "@/lib/products";
-import { categories } from "@/data/categories";
+import { getCategories } from "@/data/categories";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -54,8 +54,9 @@ function getHomepageConfig() {
   }
 }
 
-export default function Home() {
-  const allProducts = getAllProducts();
+export default async function Home() {
+  const allProducts = await getAllProducts();
+  const categories = await getCategories();
   const bestSellers = allProducts.filter((p) => p.isBestSeller).slice(0, 4);
   const newProducts = allProducts.filter((p) => p.isNew).slice(0, 4);
   const config = getHomepageConfig();

@@ -8,16 +8,18 @@ import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
+interface Review {
+  id: string;
+  clientName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 interface ProductDetailProps {
   product: Product;
   similarProducts: Product[];
 }
-
-const reviews = [
-  { id: 1, name: "Aya K.", rating: 5, date: "15 Août 2026", comment: "Superbe escarpin, très confortable même pour une longue soirée. La taille correspond parfaitement." },
-  { id: 2, name: "Fatou D.", rating: 4, date: "10 Août 2026", comment: "Très joli modèle, la qualité est au rendez-vous. Livraison rapide." },
-  { id: 3, name: "Marie C.", rating: 5, date: "2 Août 2026", comment: "J'adore ! Exactement comme sur la photo. Je recommande." },
-];
 
 export default function ProductDetail({ product, similarProducts }: ProductDetailProps) {
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
@@ -25,8 +27,19 @@ export default function ProductDetail({ product, similarProducts }: ProductDetai
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"description" | "avis">("description");
   const [isFavorite, setIsFavorite] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const { addItem } = useCart();
   const { user } = useAuth();
+
+  useEffect(() => {
+    fetch(`/api/reviews?productId=${product.id}`)
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setReviews(data); })
+      .catch(() => {});
+  }, [product.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -68,8 +81,34 @@ export default function ProductDetail({ product, similarProducts }: ProductDetai
         size: selectedSize,
         color: selectedColor,
         price: product.price,
+        image: product.images?.[0] || undefined,
       });
     }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!user || !reviewComment.trim()) return;
+    setReviewSubmitting(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          clientId: user.id,
+          clientName: user.name || user.email,
+          rating: reviewRating,
+          comment: reviewComment.trim(),
+        }),
+      });
+      if (res.ok) {
+        const newReview = await res.json();
+        setReviews((prev) => [newReview, ...prev]);
+        setReviewComment("");
+        setReviewRating(5);
+      }
+    } catch {}
+    setReviewSubmitting(false);
   };
 
   return (
@@ -276,22 +315,60 @@ export default function ProductDetail({ product, similarProducts }: ProductDetai
               </div>
             ) : (
               <div className="py-6 space-y-6">
-                {reviews.map((review) => (
-                  <div key={review.id} className="border-b border-stone-50 pb-4 last:border-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-stone-900">{review.name}</span>
-                      <span className="text-xs text-stone-400">{review.date}</span>
-                    </div>
-                    <div className="flex gap-0.5 mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} className={`w-3 h-3 ${i < review.rating ? "text-amber-400" : "text-stone-200"}`} fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
+                {/* Review form */}
+                {user && (
+                  <div className="bg-stone-50 rounded-xl p-4 mb-4">
+                    <h4 className="text-sm font-medium text-stone-900 mb-3">Laisser un avis</h4>
+                    <div className="flex gap-0.5 mb-3">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setReviewRating(star)}
+                          className="p-0.5"
+                        >
+                          <svg className={`w-5 h-5 ${star <= reviewRating ? "text-amber-400" : "text-stone-200"}`} fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </button>
                       ))}
                     </div>
-                    <p className="text-sm text-stone-600">{review.comment}</p>
+                    <textarea
+                      rows={3}
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      className="w-full bg-white border border-stone-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 resize-none"
+                      placeholder="Partagez votre expérience avec ce produit..."
+                    />
+                    <button
+                      onClick={handleSubmitReview}
+                      disabled={reviewSubmitting || !reviewComment.trim()}
+                      className="mt-3 bg-stone-900 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-stone-800 transition-colors disabled:opacity-50"
+                    >
+                      {reviewSubmitting ? "Envoi..." : "Publier"}
+                    </button>
                   </div>
-                ))}
+                )}
+
+                {reviews.length === 0 ? (
+                  <p className="text-sm text-stone-500 text-center py-4">Aucun avis pour le moment.</p>
+                ) : (
+                  reviews.map((review) => (
+                    <div key={review.id} className="border-b border-stone-50 pb-4 last:border-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-stone-900">{review.clientName}</span>
+                        <span className="text-xs text-stone-400">{new Date(review.createdAt).toLocaleDateString("fr-FR")}</span>
+                      </div>
+                      <div className="flex gap-0.5 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <svg key={i} className={`w-3 h-3 ${i < review.rating ? "text-amber-400" : "text-stone-200"}`} fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <p className="text-sm text-stone-600">{review.comment}</p>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>

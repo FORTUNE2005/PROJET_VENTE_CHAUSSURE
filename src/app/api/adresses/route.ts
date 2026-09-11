@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { adressesSchema, validateBody } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
@@ -7,8 +7,7 @@ export async function GET(request: NextRequest) {
   const clientId = searchParams.get("clientId");
   if (!clientId) return NextResponse.json([]);
 
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM adresses WHERE clientId = ? ORDER BY isDefault DESC, createdAt DESC").all(clientId);
+  const rows = await sql`SELECT * FROM adresses WHERE clientid = ${clientId} ORDER BY isdefault DESC, createdat DESC`;
   return NextResponse.json(rows);
 }
 
@@ -21,16 +20,15 @@ export async function POST(request: NextRequest) {
   }
 
   const { clientId, label, name, phone, address, city, isDefault } = validation.data;
-  const db = getDb();
 
   if (isDefault) {
-    db.prepare("UPDATE adresses SET isDefault = 0 WHERE clientId = ?").run(clientId);
+    await sql`UPDATE adresses SET isdefault = false WHERE clientid = ${clientId}`;
   }
 
   const id = String(Date.now());
-  db.prepare("INSERT INTO adresses (id, clientId, label, name, phone, address, city, isDefault) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(id, clientId, label, name, phone, address, city, isDefault ? 1 : 0);
+  await sql`INSERT INTO adresses (id, clientid, label, name, phone, address, city, isdefault) VALUES (${id}, ${clientId}, ${label}, ${name}, ${phone}, ${address}, ${city}, ${isDefault ? true : false})`;
 
-  const row = db.prepare("SELECT * FROM adresses WHERE id = ?").get(id);
+  const [row] = await sql`SELECT * FROM adresses WHERE id = ${id}`;
   return NextResponse.json(row, { status: 201 });
 }
 
@@ -40,7 +38,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "id et clientId requis" }, { status: 400 });
   }
 
-  const db = getDb();
-  db.prepare("DELETE FROM adresses WHERE id = ? AND clientId = ?").run(body.id, body.clientId);
+  await sql`DELETE FROM adresses WHERE id = ${body.id} AND clientid = ${body.clientId}`;
   return NextResponse.json({ success: true });
 }

@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Product } from "@/data/types";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +14,21 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { user } = useAuth();
+  const router = useRouter();
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(`/api/favoris?clientId=${user.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setIsFavorite(data.some((f: { productId: string }) => f.productId === product.id));
+        }
+      })
+      .catch(() => {});
+  }, [user, product.id]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -21,7 +39,34 @@ export default function ProductCard({ product }: ProductCardProps) {
       size: product.sizes[0],
       color: product.colors[0],
       price: product.price,
+      image: product.images?.[0] || undefined,
     });
+  };
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    try {
+      if (isFavorite) {
+        await fetch("/api/favoris", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ clientId: user.id, productId: product.id }),
+        });
+        setIsFavorite(false);
+      } else {
+        await fetch("/api/favoris", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ clientId: user.id, productId: product.id }),
+        });
+        setIsFavorite(true);
+      }
+    } catch {}
   };
 
   return (
@@ -69,13 +114,15 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Favorite button */}
         <button
-          className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-stone-400 hover:text-rose-500 transition-colors shadow-sm"
-          onClick={(e) => {
-            e.preventDefault();
-          }}
-          aria-label="Ajouter aux favoris"
+          className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full transition-colors shadow-sm ${
+            isFavorite
+              ? "bg-rose-500 text-white"
+              : "bg-white/80 text-stone-400 hover:text-rose-500"
+          }`}
+          onClick={handleToggleFavorite}
+          aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="w-4 h-4" fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
           </svg>
         </button>

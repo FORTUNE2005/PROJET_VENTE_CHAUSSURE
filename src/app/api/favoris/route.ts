@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { favorisSchema, validateBody } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
@@ -7,13 +7,12 @@ export async function GET(request: NextRequest) {
   const clientId = searchParams.get("clientId");
   if (!clientId) return NextResponse.json([]);
 
-  const db = getDb();
-  const favs = db.prepare(`
+  const favs = await sql`
     SELECT p.* FROM products p
-    INNER JOIN favorites f ON p.id = f.productId
-    WHERE f.clientId = ?
-    ORDER BY f.createdAt DESC
-  `).all(clientId);
+    INNER JOIN favorites f ON p.id = f.productid
+    WHERE f.clientid = ${clientId}
+    ORDER BY f.createdat DESC
+  `;
   return NextResponse.json(favs);
 }
 
@@ -26,15 +25,14 @@ export async function POST(request: NextRequest) {
   }
 
   const { clientId, productId } = validation.data;
-  const db = getDb();
 
-  const existing = db.prepare("SELECT id FROM favorites WHERE clientId = ? AND productId = ?").get(clientId, productId);
+  const [existing] = await sql`SELECT id FROM favorites WHERE clientid = ${clientId} AND productid = ${productId}`;
   if (existing) {
     return NextResponse.json({ error: "Déjà en favoris" }, { status: 409 });
   }
 
   const id = String(Date.now());
-  db.prepare("INSERT INTO favorites (id, clientId, productId) VALUES (?, ?, ?)").run(id, clientId, productId);
+  await sql`INSERT INTO favorites (id, clientid, productid) VALUES (${id}, ${clientId}, ${productId})`;
   return NextResponse.json({ success: true }, { status: 201 });
 }
 
@@ -47,7 +45,6 @@ export async function DELETE(request: NextRequest) {
   }
 
   const { clientId, productId } = validation.data;
-  const db = getDb();
-  db.prepare("DELETE FROM favorites WHERE clientId = ? AND productId = ?").run(clientId, productId);
+  await sql`DELETE FROM favorites WHERE clientid = ${clientId} AND productid = ${productId}`;
   return NextResponse.json({ success: true });
 }

@@ -3,14 +3,16 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryFilters from "@/components/CategoryFilters";
 import { getAllProducts } from "@/lib/products";
-import { categories } from "@/data/categories";
+import { getCategories } from "@/data/categories";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const categories = await getCategories();
   return categories.map((cat) => ({ slug: cat.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const categories = await getCategories();
   const category = categories.find((c) => c.slug === slug);
   return {
     title: `${category?.name ?? "Catégorie"} | Lucia Chaussures`,
@@ -19,8 +21,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const categories = await getCategories();
   const category = categories.find((c) => c.slug === slug);
-  const allProducts = getAllProducts();
+  const allProducts = await getAllProducts();
   const categoryProducts = allProducts.filter((p) => p.category.slug === slug);
 
   if (!category) {

@@ -1,4 +1,4 @@
-import { getDb, DbProduct } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { Product, Category } from "@/data/types";
 
 const categories: Category[] = [
@@ -13,74 +13,64 @@ function resolveCategory(slug: string): Category {
   return categories.find((c) => c.id === slug || c.slug === slug) || categories[0];
 }
 
-function rowToProduct(row: DbProduct): Product {
+function rowToProduct(row: Record<string, unknown>): Product {
   return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    price: row.price,
-    originalPrice: row.originalPrice ?? undefined,
-    category: resolveCategory(row.category),
-    images: (() => { try { return JSON.parse(row.images); } catch { return []; } })(),
-    stock: row.stock,
-    colors: (() => { try { return JSON.parse(row.colors); } catch { return []; } })(),
-    sizes: (() => { try { return JSON.parse(row.sizes); } catch { return []; } })(),
-    rating: row.rating,
-    reviewCount: row.reviewCount,
-    isNew: row.isNew === 1,
-    isBestSeller: row.isBestSeller === 1,
-    description: row.description,
-    material: row.material,
+    id: row.id as string,
+    name: row.name as string,
+    slug: row.slug as string,
+    price: row.price as number,
+    originalPrice: (row.originalprice as number) ?? undefined,
+    category: resolveCategory(row.category as string),
+    images: (() => { try { return JSON.parse(row.images as string); } catch { return []; } })(),
+    stock: row.stock as number,
+    colors: (() => { try { return JSON.parse(row.colors as string); } catch { return []; } })(),
+    sizes: (() => { try { return JSON.parse(row.sizes as string); } catch { return []; } })(),
+    rating: row.rating as number,
+    reviewCount: row.reviewcount as number,
+    isNew: row.isnew as boolean,
+    isBestSeller: row.isbestseller as boolean,
+    description: row.description as string,
+    material: row.material as string,
   };
 }
 
-export function getAllProducts(): Product[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM products ORDER BY createdAt DESC").all() as DbProduct[];
+export async function getAllProducts(): Promise<Product[]> {
+  const rows = await sql`SELECT * FROM products ORDER BY createdat DESC`;
   return rows.map(rowToProduct);
 }
 
-export function getProductBySlug(slug: string): Product | undefined {
-  const db = getDb();
-  const row = db.prepare("SELECT * FROM products WHERE slug = ?").get(slug) as DbProduct | undefined;
-  return row ? rowToProduct(row) : undefined;
+export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+  const rows = await sql`SELECT * FROM products WHERE slug = ${slug}`;
+  return rows[0] ? rowToProduct(rows[0]) : undefined;
 }
 
-export function getProductById(id: string): Product | undefined {
-  const db = getDb();
-  const row = db.prepare("SELECT * FROM products WHERE id = ?").get(id) as DbProduct | undefined;
-  return row ? rowToProduct(row) : undefined;
+export async function getProductById(id: string): Promise<Product | undefined> {
+  const rows = await sql`SELECT * FROM products WHERE id = ${id}`;
+  return rows[0] ? rowToProduct(rows[0]) : undefined;
 }
 
-export function getProductsByCategory(categorySlug: string): Product[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM products WHERE category = ?").all(categorySlug) as DbProduct[];
+export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
+  const rows = await sql`SELECT * FROM products WHERE category = ${categorySlug}`;
   return rows.map(rowToProduct);
 }
 
-export function getBestSellers(): Product[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM products WHERE isBestSeller = 1").all() as DbProduct[];
+export async function getBestSellers(): Promise<Product[]> {
+  const rows = await sql`SELECT * FROM products WHERE isbestseller = true`;
   return rows.map(rowToProduct);
 }
 
-export function getNewProducts(): Product[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM products WHERE isNew = 1").all() as DbProduct[];
+export async function getNewProducts(): Promise<Product[]> {
+  const rows = await sql`SELECT * FROM products WHERE isnew = true`;
   return rows.map(rowToProduct);
 }
 
-export function getPromoProducts(): Product[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM products WHERE originalPrice IS NOT NULL").all() as DbProduct[];
+export async function getPromoProducts(): Promise<Product[]> {
+  const rows = await sql`SELECT * FROM products WHERE originalprice IS NOT NULL`;
   return rows.map(rowToProduct);
 }
 
-export function searchProducts(query: string): Product[] {
-  const db = getDb();
+export async function searchProducts(query: string): Promise<Product[]> {
   const q = `%${query}%`;
-  const rows = db.prepare(
-    "SELECT * FROM products WHERE name LIKE ? OR description LIKE ? OR material LIKE ? OR category LIKE ?"
-  ).all(q, q, q, q) as DbProduct[];
+  const rows = await sql`SELECT * FROM products WHERE name ILIKE ${q} OR description ILIKE ${q} OR material ILIKE ${q} OR category ILIKE ${q}`;
   return rows.map(rowToProduct);
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import crypto from "crypto";
 import { loginSchema, validateBody } from "@/lib/validation";
 
@@ -12,9 +12,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { email, password } = validation.data;
-  const db = getDb();
   const hash = crypto.createHash("sha256").update(password).digest("hex");
-  const user = db.prepare("SELECT id, name, email, phone, address FROM clients WHERE email = ? AND password = ?").get(email, hash) as { id: string; name: string; email: string; phone: string; address: string } | undefined;
+  const [user] = await sql`SELECT id, name, email, phone, address FROM clients WHERE email = ${email} AND password = ${hash}`;
 
   if (!user) {
     return NextResponse.json({ success: false, error: "Email ou mot de passe incorrect" }, { status: 401 });

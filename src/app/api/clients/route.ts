@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 
 export async function GET() {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM clients ORDER BY joinDate DESC").all();
+  const rows = await sql`SELECT * FROM clients ORDER BY joindate DESC`;
   return NextResponse.json(rows);
 }

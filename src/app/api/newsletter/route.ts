@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { newsletterSchema, validateBody } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
@@ -11,14 +11,13 @@ export async function POST(request: NextRequest) {
   }
 
   const { email } = validation.data;
-  const db = getDb();
 
-  const existing = db.prepare("SELECT id FROM newsletter WHERE email = ?").get(email);
+  const [existing] = await sql`SELECT id FROM newsletter WHERE email = ${email}`;
   if (existing) {
     return NextResponse.json({ error: "Déjà inscrit" }, { status: 409 });
   }
 
   const id = String(Date.now());
-  db.prepare("INSERT INTO newsletter (id, email) VALUES (?, ?)").run(id, email);
+  await sql`INSERT INTO newsletter (id, email) VALUES (${id}, ${email})`;
   return NextResponse.json({ success: true }, { status: 201 });
 }

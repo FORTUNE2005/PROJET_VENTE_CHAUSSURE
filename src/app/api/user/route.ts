@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import crypto from "crypto";
 import { userUpdateSchema, validateBody } from "@/lib/validation";
 
@@ -12,23 +12,22 @@ export async function PUT(request: NextRequest) {
   }
 
   const { id, name, email, phone, currentPassword, newPassword } = validation.data;
-  const db = getDb();
 
   const fields: string[] = [];
   const values: (string | number)[] = [];
 
-  if (name !== undefined) { fields.push("name = ?"); values.push(name); }
-  if (email !== undefined) { fields.push("email = ?"); values.push(email); }
-  if (phone !== undefined) { fields.push("phone = ?"); values.push(phone); }
+  if (name !== undefined) { fields.push("name"); values.push(name); }
+  if (email !== undefined) { fields.push("email"); values.push(email); }
+  if (phone !== undefined) { fields.push("phone"); values.push(phone); }
 
   if (currentPassword && newPassword) {
     const currentHash = crypto.createHash("sha256").update(currentPassword).digest("hex");
-    const user = db.prepare("SELECT id, password FROM clients WHERE id = ? AND password = ?").get(id, currentHash) as { id: string } | undefined;
+    const [user] = await sql`SELECT id, password FROM clients WHERE id = ${id} AND password = ${currentHash}` as { id: string }[];
     if (!user) {
       return NextResponse.json({ error: "Mot de passe actuel incorrect" }, { status: 400 });
     }
     const newHash = crypto.createHash("sha256").update(newPassword).digest("hex");
-    fields.push("password = ?");
+    fields.push("password");
     values.push(newHash);
   }
 
@@ -37,8 +36,11 @@ export async function PUT(request: NextRequest) {
   }
 
   values.push(id);
-  db.prepare(`UPDATE clients SET ${fields.join(", ")} WHERE id = ?`).run(...values);
+  const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(", ");
+  const query = `UPDATE clients SET ${setClause} WHERE id = $${fields.length + 1}`;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (sql.unsafe as any)(query, values);
 
-  const updated = db.prepare("SELECT id, name, email, phone, address FROM clients WHERE id = ?").get(id);
+  const [updated] = await sql`SELECT id, name, email, phone, address FROM clients WHERE id = ${id}`;
   return NextResponse.json({ success: true, user: updated });
 }

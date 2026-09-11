@@ -3,14 +3,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { getAllProducts } from "@/lib/products";
-import { formatPrice } from "@/lib/format";
 
 export const metadata = {
   title: "Promotions | Lucia Chaussures",
 };
 
-export default function PromotionsPage() {
-  const promoProducts = getAllProducts().filter((p) => p.originalPrice);
+export default async function PromotionsPage() {
+  const allProducts = await getAllProducts();
+  const promoProducts = allProducts.filter((p) => p.originalPrice);
 
   return (
     <>

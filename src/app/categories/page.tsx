@@ -31,8 +31,8 @@ const categorySlugs: Record<string, string> = {
   ballerines: "ballerines-mocassins",
 };
 
-export default function CategoriesPage() {
-  const products = getAllProducts();
+export default async function CategoriesPage() {
+  const products = await getAllProducts();
 
   const counts: Record<string, number> = {};
   for (const p of products) {

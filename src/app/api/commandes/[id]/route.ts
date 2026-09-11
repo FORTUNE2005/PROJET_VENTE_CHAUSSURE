@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { sql } from "@/lib/db";
 import { orderStatusSchema, validateBody } from "@/lib/validation";
 
 export async function PUT(
@@ -13,9 +13,8 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const db = getDb();
 
-  const existing = db.prepare("SELECT * FROM orders WHERE id = ?").get(id);
+  const [existing] = await sql`SELECT * FROM orders WHERE id = ${id}`;
   if (!existing) {
     return NextResponse.json({ error: "Commande non trouvée" }, { status: 404 });
   }
@@ -25,9 +24,9 @@ export async function PUT(
     if (!validation.success) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
-    db.prepare("UPDATE orders SET status = ? WHERE id = ?").run(validation.data.status, id);
+    await sql`UPDATE orders SET status = ${validation.data.status} WHERE id = ${id}`;
   }
 
-  const updated = db.prepare("SELECT * FROM orders WHERE id = ?").get(id);
+  const [updated] = await sql`SELECT * FROM orders WHERE id = ${id}`;
   return NextResponse.json(updated);
 }

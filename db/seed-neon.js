@@ -15,7 +15,7 @@ const products = [
     id: "p1", name: "Sneakers Élégance", slug: "sneakers-elegance",
     price: 25000, originalprice: 32000, category: "baskets",
     colors: '["Blanc","Noir","Rose"]', sizes: '[36,37,38,39,40]',
-    images: '["/products/sneakers-1.jpg"]', stock: 15, rating: 4.8, reviewcount: 24,
+    images: '["/uploads/baskets-flyknit-grises.jpg"]', stock: 15, rating: 4.8, reviewcount: 24,
     isnew: true, isbestseller: true,
     description: "Sneakers tendance avec un design épuré et confortable au quotidien.",
     material: "Cuir synthétique et mesh"
@@ -24,7 +24,7 @@ const products = [
     id: "p2", name: "Escarpin Rosé", slug: "escarpin-rose",
     price: 28000, category: "escarpins",
     colors: '["Rose","Nude","Noir"]', sizes: '[36,37,38,39]',
-    images: '["/products/escarpin-1.jpg"]', stock: 10, rating: 4.6, reviewcount: 18,
+    images: '["/uploads/escarpin-rouge-fetice.jpg"]', stock: 10, rating: 4.6, reviewcount: 18,
     isnew: true, isbestseller: false,
     description: "Escarpin féminin pour sublimer vos tenues de soirée.",
     material: "Cuir véritable"
@@ -33,7 +33,7 @@ const products = [
     id: "p3", name: "Sandale Platform", slug: "sandale-platform",
     price: 18000, originalprice: 22000, category: "sandales",
     colors: '["Doré","Argent","Noir"]', sizes: '[36,37,38,39,40]',
-    images: '["/products/sandale-1.jpg"]', stock: 20, rating: 4.5, reviewcount: 32,
+    images: '["/uploads/sandale-plateforme-ete.jpg"]', stock: 20, rating: 4.5, reviewcount: 32,
     isnew: false, isbestseller: true,
     description: "Sandale à plateforme pour un look décontracté et tendance.",
     material: "Souple synthétique"
@@ -42,7 +42,7 @@ const products = [
     id: "p4", name: "Bottine Cuir", slug: "bottine-cuir",
     price: 35000, category: "bottes",
     colors: '["Marron","Noir","Camel"]', sizes: '[37,38,39,40]',
-    images: '["/products/bottine-1.jpg"]', stock: 8, rating: 4.9, reviewcount: 15,
+    images: '["/uploads/bottine-cuir-marron.jpg"]', stock: 8, rating: 4.9, reviewcount: 15,
     isnew: false, isbestseller: true,
     description: "Bottine en cuir véritable, élégance et confort réunis.",
     material: "Cuir véritable"
@@ -51,7 +51,7 @@ const products = [
     id: "p5", name: "Ballerine Fine", slug: "ballerine-fine",
     price: 15000, category: "ballerines",
     colors: '["Noir","Béige","Rouge"]', sizes: '[36,37,38,39,40]',
-    images: '["/products/ballerine-1.jpg"]', stock: 25, rating: 4.4, reviewcount: 40,
+    images: '["/uploads/ballerine-nude-confort.jpg"]', stock: 25, rating: 4.4, reviewcount: 40,
     isnew: false, isbestseller: false,
     description: "Ballerine fine et légère pour un confort toute la journée.",
     material: "Daim synthétique"
@@ -60,7 +60,7 @@ const products = [
     id: "p6", name: "Basket Chunky", slug: "basket-chunky",
     price: 30000, originalprice: 38000, category: "baskets",
     colors: '["Blanc","Gris","Beige"]', sizes: '[37,38,39,40]',
-    images: '["/products/sneakers-2.jpg"]', stock: 12, rating: 4.7, reviewcount: 20,
+    images: '["/uploads/baskets-chunky-blanches.jpg"]', stock: 12, rating: 4.7, reviewcount: 20,
     isnew: true, isbestseller: false,
     description: "Basket chunky tendance pour un look streetwear affirmé.",
     material: "Mesh et cuir synthétique"
@@ -69,7 +69,7 @@ const products = [
     id: "p7", name: "Escarpin Talon Bloc", slug: "escarpin-talon-bloc",
     price: 26000, category: "escarpins",
     colors: '["Noir","Bordeaux","Vert"]', sizes: '[36,37,38,39]',
-    images: '["/products/escarpin-2.jpg"]', stock: 7, rating: 4.8, reviewcount: 12,
+    images: '["/uploads/escarpin-velvet-noir.jpg"]', stock: 7, rating: 4.8, reviewcount: 12,
     isnew: true, isbestseller: false,
     description: "Escarpin à talon bloc pour plus de stabilité et de style.",
     material: "Cuir véritable"
@@ -78,7 +78,7 @@ const products = [
     id: "p8", name: "Sandale Lanières", slug: "sandale-lanieres",
     price: 20000, category: "sandales",
     colors: '["Noir","Doré","Bronze"]', sizes: '[36,37,38,39,40]',
-    images: '["/products/sandale-2.jpg"]', stock: 18, rating: 4.3, reviewcount: 28,
+    images: '["/uploads/sandale-nude-talon.jpg"]', stock: 18, rating: 4.3, reviewcount: 28,
     isnew: false, isbestseller: false,
     description: "Sandale à lanières élégante pour toutes les occasions.",
     material: "Cuir synthétique"

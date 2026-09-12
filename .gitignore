@@ -9,7 +9,8 @@ next-env.d.ts
 db/*.db
 db/*.db-shm
 db/*.db-wal
-public/uploads/*
+# Images uploads now tracked for Vercel deployment
+# public/uploads/*
 
 .vercel
 .env*

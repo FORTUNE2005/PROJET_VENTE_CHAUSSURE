@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  <rect width="600" height="800" fill="#f3e8e8"/>
+  <rect x="50" y="50" width="500" height="700" rx="20" fill="white" opacity="0.3"/>
+  <text x="300" y="360" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="#d4a0a0" text-anchor="middle" opacity="0.6">EV</text>
+  <text x="300" y="460" font-family="Arial, sans-serif" font-size="24" fill="#d4a0a0" text-anchor="middle" opacity="0.5">Escarpin Velvet Noir</text>
+  <circle cx="300" cy="560" r="40" fill="#d4a0a0" opacity="0.2"/>
+  <path d="M280 560 L300 540 L320 560 L310 560 L310 580 L290 580 L290 560 Z" fill="#d4a0a0" opacity="0.3"/>
+</svg>
